@@ -1,0 +1,22 @@
+//@version=5
+indicator("Support and Resistance Levels", overlay=true)
+
+// پارامترهای ورودی
+lookback = input.int(50, title="Lookback Period", minval=1)
+deviation = input.float(0.01, title="Deviation for Confirmation")
+
+// محاسبه سطح حمایت و مقاومت
+high_level = ta.highest(high, lookback)
+low_level = ta.lowest(low, lookback)
+
+// رسم سطوح حمایت و مقاومت
+plot(high_level, color=color.red, linewidth=2, title="Resistance Level")
+plot(low_level, color=color.green, linewidth=2, title="Support Level")
+
+// نمایش سیگنال‌های خرید و فروش بر اساس برخورد قیمت با سطوح
+buy_signal = ta.crossover(close, low_level * (1 + deviation))
+sell_signal = ta.crossunder(close, high_level * (1 - deviation))
+
+// برچسب‌ها برای سیگنال‌ها
+plotshape(buy_signal, location=location.belowbar, color=color.green, style=shape.labelup, title="Buy Signal")
+plotshape(sell_signal, location=location.abovebar, color=color.red, style=shape.labeldown, title="Sell Signal")

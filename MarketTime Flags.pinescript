@@ -1,0 +1,65 @@
+//@version=5
+indicator("Global Market Trading Times with Flag Colors", overlay=true)
+
+// ورودی برای انتخاب کشور
+country = input.string("USA", title="Select Country", options=["USA", "Germany", "France", "Brazil", "Italy", "Japan", "Canada", "India", "Australia", "UK"])
+
+// تابع برای تعیین رنگ پرچم هر کشور
+flag_color(country) =>
+    switch country
+        "USA" => color.new(color.red, 90)  // پرچم آمریکا
+        "Germany" => color.new(color.black, 90)  // پرچم آلمان
+        "France" => color.new(color.blue, 90)  // پرچم فرانسه
+        "Brazil" => color.new(color.green, 90)  // پرچم برزیل
+        "Italy" => color.new(color.green, 90)  // پرچم ایتالیا
+        "Japan" => color.new(color.white, 90)  // پرچم ژاپن
+        "Canada" => color.new(color.red, 90)  // پرچم کانادا
+        "India" => color.new(color.orange, 90)  // پرچم هند
+        "Australia" => color.new(color.blue, 90)  // پرچم استرالیا
+        "UK" => color.new(color.blue, 90)  // پرچم بریتانیا
+        => na  // اگر کشوری انتخاب نشده باشد، رنگ هیچ کجا اعمال نمی‌شود
+
+// زمان شروع و پایان بازارها به ساعت UTC
+london_open = timestamp("GMT", year, month, dayofmonth, 8, 0)  // 8:00 AM (لندن)
+london_close = timestamp("GMT", year, month, dayofmonth, 16, 0) // 4:00 PM (لندن)
+
+new_york_open = timestamp("GMT", year, month, dayofmonth, 13, 0)  // 8:00 AM (نیویورک)
+new_york_close = timestamp("GMT", year, month, dayofmonth, 21, 0) // 4:00 PM (نیویورک)
+
+tokyo_open = timestamp("GMT", year, month, dayofmonth, 0, 0)  // 9:00 AM (توکیو)
+tokyo_close = timestamp("GMT", year, month, dayofmonth, 8, 0) // 4:00 PM (توکیو)
+
+// تغییر رنگ پس‌زمینه بر اساس زمان‌بندی بازار
+bgcolor(time >= london_open and time <= london_close ? color.new(color.blue, 90) : na) // رنگ پس‌زمینه لندن
+bgcolor(time >= new_york_open and time <= new_york_close ? color.new(color.green, 90) : na) // رنگ پس‌زمینه نیویورک
+bgcolor(time >= tokyo_open and time <= tokyo_close ? color.new(color.red, 90) : na) // رنگ پس‌زمینه توکیو
+
+// نمایش برچسب‌های زمان‌بندی بازارها
+var label london_label = na
+var label new_york_label = na
+var label tokyo_label = na
+
+if (time >= london_open and time <= london_close)
+    london_label := label.new(bar_index, high, "London", color=color.blue, textcolor=color.white, style=label.style_label_down, size=size.small)
+else
+    label.delete(london_label)
+
+if (time >= new_york_open and time <= new_york_close)
+    new_york_label := label.new(bar_index, high, "New York", color=color.green, textcolor=color.white, style=label.style_label_down, size=size.small)
+else
+    label.delete(new_york_label)
+
+if (time >= tokyo_open and time <= tokyo_close)
+    tokyo_label := label.new(bar_index, high, "Tokyo", color=color.red, textcolor=color.white, style=label.style_label_down, size=size.small)
+else
+    label.delete(tokyo_label)
+
+// تغییر رنگ پس‌زمینه برای پرچم کشور انتخابی
+bgcolor(flag_color(country), offset=0)
+
+// نمایش نام کشور بر روی چارت
+var label country_label = na
+if bar_index % 10 == 0  // این شرط باعث می‌شود که برچسب‌ها فقط هر ۱۰ کندل ظاهر شوند
+    country_label := label.new(bar_index, high, country, color=color.white, textcolor=color.black, style=label.style_label_down, size=size.small)
+else
+    label.delete(country_label)

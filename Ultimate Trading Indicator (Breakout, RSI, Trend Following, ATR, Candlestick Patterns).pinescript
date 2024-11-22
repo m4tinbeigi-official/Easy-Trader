@@ -1,0 +1,73 @@
+//@version=5
+indicator("Comprehensive Trading Strategy with Signals", overlay=true)
+
+// ورودی‌ها
+lookback = input.int(20, title="Lookback Period for Breakout")
+deviation = input.float(0.01, title="Deviation for Breakout Confirmation")
+rsi_period = input.int(14, title="RSI Period")
+oversold_level = input.int(30, title="RSI Oversold Level")
+overbought_level = input.int(70, title="RSI Overbought Level")
+short_ema = input.int(9, title="Short EMA Period")
+long_ema = input.int(21, title="Long EMA Period")
+adx_period = input.int(14, title="ADX Period")
+adx_threshold = input.int(25, title="ADX Threshold for Trend")
+ma_period = input.int(50, title="MA Period")
+atr_period = input.int(14, title="ATR Period")
+risk_multiplier = input.float(1.5, title="Risk Multiplier for SL and TP")
+
+// محاسبه‌ها
+
+// 1. Breakout Strategy
+high_level = ta.highest(high, lookback)
+low_level = ta.lowest(low, lookback)
+breakout_up = close > high_level * (1 + deviation)
+breakout_down = close < low_level * (1 - deviation)
+
+// 2. RSI with Zones
+rsi = ta.rsi(close, rsi_period)
+buy_rsi = ta.crossover(rsi, oversold_level)
+sell_rsi = ta.crossunder(rsi, overbought_level)
+
+// 3. Trend Following with EMA and ADX
+short_ema_value = ta.ema(close, short_ema)
+long_ema_value = ta.ema(close, long_ema)
+adx_value = ta.adx(adx_period)
+buy_trend = adx_value > adx_threshold and close > short_ema_value and close > long_ema_value
+sell_trend = adx_value > adx_threshold and close < short_ema_value and close < long_ema_value
+
+// 4. Risk Management with ATR
+stop_loss = close - ta.atr(atr_period) * risk_multiplier
+take_profit = close + ta.atr(atr_period) * risk_multiplier
+buy_risk = close > ma_period
+sell_risk = close < ma_period
+
+// 5. Candlestick Pattern (Bullish and Bearish Engulfing)
+bullish_engulfing = ta.candlepattern("Bullish Engulfing")
+bearish_engulfing = ta.candlepattern("Bearish Engulfing")
+buy_candlestick = bullish_engulfing
+sell_candlestick = bearish_engulfing
+
+// چراغ‌های وضعیت استراتژی‌ها
+breakout_signal = breakout_up or breakout_down
+rsi_signal = buy_rsi or sell_rsi
+trend_signal = buy_trend or sell_trend
+risk_signal = buy_risk or sell_risk
+candlestick_signal = buy_candlestick or sell_candlestick
+
+// تعیین رنگ چراغ‌ها برای وضعیت ترید
+trade_signal = (breakout_signal and rsi_signal and trend_signal and risk_signal and candlestick_signal)
+trade_status = trade_signal ? color.green : color.red
+
+// نمایش چراغ وضعیت
+bgcolor(trade_status, transp=90)
+
+// رسم سطوح مقاومت و حمایت برای استراتژی Breakout
+plot(high_level, color=color.red, linewidth=2, title="Resistance Level")
+plot(low_level, color=color.green, linewidth=2, title="Support Level")
+
+// نمایش سیگنال‌ها و توضیحات
+plotshape(breakout_up, location=location.belowbar, color=color.green, style=shape.labelup, title="Breakout Buy Signal")
+plotshape(breakout_down, location=location.abovebar, color=color.red, style=shape.labeldown, title="Breakout Sell Signal")
+
+plotshape(buy_rsi, location=location.belowbar, color=color.green, style=shape.labelup, title="RSI Buy Signal")
+plotshape(sell_rsi, locati

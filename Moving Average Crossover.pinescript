@@ -1,0 +1,22 @@
+//@version=5
+indicator("Moving Average Crossover Strategy", overlay=true)
+
+// ورودی‌ها
+short_period = input.int(9, title="Short MA Period")
+long_period = input.int(21, title="Long MA Period")
+
+// محاسبه میانگین‌های متحرک
+short_ma = ta.sma(close, short_period)
+long_ma = ta.sma(close, long_period)
+
+// رسم میانگین‌های متحرک
+plot(short_ma, color=color.blue, title="Short MA")
+plot(long_ma, color=color.orange, title="Long MA")
+
+// سیگنال‌های خرید و فروش
+buy_signal = ta.crossover(short_ma, long_ma)
+sell_signal = ta.crossunder(short_ma, long_ma)
+
+// برچسب‌ها برای سیگنال‌ها
+plotshape(buy_signal, location=location.belowbar, color=color.green, style=shape.labelup, title="Buy Signal")
+plotshape(sell_signal, location=location.abovebar, color=color.red, style=shape.labeldown, title="Sell Signal")

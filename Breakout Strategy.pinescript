@@ -1,0 +1,22 @@
+//@version=5
+indicator("Breakout Strategy", overlay=true)
+
+// ورودی‌ها
+lookback = input.int(20, title="Lookback Period")
+deviation = input.float(0.01, title="Deviation for Confirmation")
+
+// محاسبه سطح مقاومت و حمایت
+high_level = ta.highest(high, lookback)
+low_level = ta.lowest(low, lookback)
+
+// رسم سطوح حمایت و مقاومت
+plot(high_level, color=color.red, linewidth=2, title="Resistance Level")
+plot(low_level, color=color.green, linewidth=2, title="Support Level")
+
+// سیگنال شکست
+breakout_up = close > high_level * (1 + deviation)
+breakout_down = close < low_level * (1 - deviation)
+
+// نمایش سیگنال‌های خرید و فروش
+plotshape(breakout_up, location=location.belowbar, color=color.green, style=shape.labelup, title="Breakout Buy Signal")
+plotshape(breakout_down, location=location.abovebar, color=color.red, style=shape.labeldown, title="Breakout Sell Signal")

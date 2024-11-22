@@ -1,0 +1,30 @@
+//@version=5
+indicator("MA + ATR Risk Management", overlay=true)
+
+// ورودی‌ها
+ma_period = input.int(50, title="MA Period")
+atr_period = input.int(14, title="ATR Period")
+risk_multiplier = input.float(1.5, title="Risk Multiplier for SL and TP")
+
+// محاسبه MA و ATR
+ma_value = ta.sma(close, ma_period)
+atr_value = ta.atr(atr_period)
+
+// محاسبه حد ضرر و سود هدف
+stop_loss = close - atr_value * risk_multiplier
+take_profit = close + atr_value * risk_multiplier
+
+// رسم MA
+plot(ma_value, color=color.blue, linewidth=2, title="Moving Average")
+
+// سیگنال‌های خرید و فروش
+buy_signal = close > ma_value
+sell_signal = close < ma_value
+
+// نمایش سیگنال‌ها
+plotshape(buy_signal, location=location.belowbar, color=color.green, style=shape.labelup, title="Buy Signal")
+plotshape(sell_signal, location=location.abovebar, color=color.red, style=shape.labeldown, title="Sell Signal")
+
+// رسم حد ضرر و سود هدف
+plot(stop_loss, color=color.red, linewidth=1, title="Stop Loss")
+plot(take_profit, color=color.green, linewidth=1, title="Take Profit")

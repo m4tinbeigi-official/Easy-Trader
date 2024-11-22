@@ -1,0 +1,18 @@
+//@version=5
+indicator("RSI Divergence", overlay=true)
+
+// ورودی‌ها
+rsi_period = input.int(14, title="RSI Period")
+rsi_oversold = input.int(30, title="RSI Oversold Level")
+rsi_overbought = input.int(70, title="RSI Overbought Level")
+
+// محاسبه RSI
+rsi = ta.rsi(close, rsi_period)
+
+// تشخیص واگرایی مثبت و منفی
+positive_divergence = ta.lowest(rsi, 10) < rsi and ta.lowest(low, 10) > low
+negative_divergence = ta.highest(rsi, 10) > rsi and ta.highest(high, 10) < high
+
+// رسم سیگنال‌های واگرایی
+plotshape(positive_divergence, location=location.belowbar, color=color.green, style=shape.labelup, title="Positive Divergence")
+plotshape(negative_divergence, location=location.abovebar, color=color.red, style=shape.labeldown, title="Negative Divergence")

@@ -1,0 +1,22 @@
+//@version=5
+indicator("RSI with Zones", overlay=false)
+
+// ورودی‌ها
+rsi_period = input.int(14, title="RSI Period")
+oversold_level = input.int(30, title="RSI Oversold Level")
+overbought_level = input.int(70, title="RSI Overbought Level")
+
+// محاسبه RSI
+rsi = ta.rsi(close, rsi_period)
+
+// رسم خطوط اشباع خرید و فروش
+hline(oversold_level, "Oversold", color=color.green)
+hline(overbought_level, "Overbought", color=color.red)
+
+// سیگنال‌های خرید و فروش
+buy_signal = ta.crossover(rsi, oversold_level)
+sell_signal = ta.crossunder(rsi, overbought_level)
+
+// نمایش سیگنال‌ها
+plotshape(buy_signal, location=location.belowbar, color=color.green, style=shape.labelup, title="RSI Buy Signal")
+plotshape(sell_signal, location=location.abovebar, color=color.red, style=shape.labeldown, title="RSI Sell Signal")

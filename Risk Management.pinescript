@@ -1,0 +1,14 @@
+//@version=5
+indicator("Risk to Reward Ratio", overlay=true)
+
+// ورودی‌ها
+stop_loss_pct = input.float(1, title="Stop Loss (%)")  // درصد توقف ضرر
+take_profit_pct = input.float(2, title="Take Profit (%)")  // درصد سود هدف
+
+// محاسبه سطوح توقف ضرر و سود هدف
+stop_loss = close * (1 - stop_loss_pct / 100)
+take_profit = close * (1 + take_profit_pct / 100)
+
+// رسم سطوح توقف ضرر و سود هدف
+plot(stop_loss, color=color.red, linewidth=2, title="Stop Loss Level")
+plot(take_profit, color=color.green, linewidth=2, title="Take Profit Level")

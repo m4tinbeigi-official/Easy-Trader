@@ -1,0 +1,14 @@
+//@version=5
+indicator("Candlestick Pattern Strategy", overlay=true)
+
+// شناسایی الگوی کندل استیک پوشای صعودی و نزولی
+bullish_engulfing = ta.candlepattern("Bullish Engulfing")
+bearish_engulfing = ta.candlepattern("Bearish Engulfing")
+
+// سیگنال‌های خرید و فروش
+buy_signal = bullish_engulfing
+sell_signal = bearish_engulfing
+
+// نمایش سیگنال‌ها
+plotshape(buy_signal, location=location.belowbar, color=color.green, style=shape.labelup, title="Buy Signal")
+plotshape(sell_signal, location=location.abovebar, color=color.red, style=shape.labeldown, title="Sell Signal")
