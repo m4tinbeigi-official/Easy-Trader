@@ -1,14 +1,89 @@
 //@version=5
-indicator("Candlestick Pattern Strategy", overlay=true)
+indicator("Comprehensive Trading Strategy with Signals", overlay=true)
 
-// شناسایی الگوی کندل استیک پوشای صعودی و نزولی
-bullish_engulfing = ta.candlepattern("Bullish Engulfing")
-bearish_engulfing = ta.candlepattern("Bearish Engulfing")
+// Inputs
+lookback = input.int(20, title="Lookback Period for Breakout")
+deviation = input.float(0.01, title="Deviation for Breakout Confirmation")
+rsi_period = input.int(14, title="RSI Period")
+oversold_level = input.int(30, title="RSI Oversold Level")
+overbought_level = input.int(70, title="RSI Overbought Level")
+short_ema = input.int(9, title="Short EMA Period")
+long_ema = input.int(21, title="Long EMA Period")
+adx_period = input.int(14, title="ADX Period")
+adx_threshold = input.int(25, title="ADX Threshold for Trend")
+ma_period = input.int(50, title="MA Period")
+atr_period = input.int(14, title="ATR Period")
+risk_multiplier = input.float(1.5, title="Risk Multiplier for SL and TP")
 
-// سیگنال‌های خرید و فروش
-buy_signal = bullish_engulfing
-sell_signal = bearish_engulfing
+// Calculations
 
-// نمایش سیگنال‌ها
-plotshape(buy_signal, location=location.belowbar, color=color.green, style=shape.labelup, title="Buy Signal")
-plotshape(sell_signal, location=location.abovebar, color=color.red, style=shape.labeldown, title="Sell Signal")
+// 1. Breakout Strategy
+high_level = ta.highest(high, lookback)
+low_level = ta.lowest(low, lookback)
+breakout_up = close > high_level * (1 + deviation)
+breakout_down = close < low_level * (1 - deviation)
+
+// 2. RSI with Zones
+rsi = ta.rsi(close, rsi_period)
+buy_rsi = ta.crossover(rsi, oversold_level)
+sell_rsi = ta.crossunder(rsi, overbought_level)
+
+// 3. Trend Following with EMA and ADX
+short_ema_value = ta.ema(close, short_ema)
+long_ema_value = ta.ema(close, long_ema)
+
+// ADX Calculation using DMI
+[plus_di, minus_di, adx_value] = ta.dmi(adx_period)
+
+buy_trend = adx_value > adx_threshold and close > short_ema_value and close > long_ema_value and plus_di > minus_di
+sell_trend = adx_value > adx_threshold and close < short_ema_value and close < long_ema_value and minus_di > plus_di
+
+// 4. Risk Management with ATR
+stop_loss = close - ta.atr(atr_period) * risk_multiplier
+take_profit = close + ta.atr(atr_period) * risk_multiplier
+buy_risk = close > ma_period
+sell_risk = close < ma_period
+
+// 5. Candlestick Pattern (Bullish and Bearish Engulfing)
+// Bullish Engulfing: Current candle fully engulfs the previous candle and closes higher
+bullish_engulfing = close > open and open[1] > close[1] and close > open[1] and open < close[1]
+
+// Bearish Engulfing: Current candle fully engulfs the previous candle and closes lower
+bearish_engulfing = close < open and open[1] < close[1] and close < open[1] and open > close[1]
+
+buy_candlestick = bullish_engulfing
+sell_candlestick = bearish_engulfing
+
+// Signal for all strategies
+breakout_signal = breakout_up or breakout_down
+rsi_signal = buy_rsi or sell_rsi
+trend_signal = buy_trend or sell_trend
+risk_signal = buy_risk or sell_risk
+candlestick_signal = buy_candlestick or sell_candlestick
+
+// Overall trade signal (Green for good, Red for bad)
+trade_signal = (breakout_signal and rsi_signal and trend_signal and risk_signal and candlestick_signal)
+trade_status = trade_signal ? color.green : color.red
+
+// Background color to indicate the signal
+bgcolor(trade_status, transp=90)
+
+// Plot breakout levels
+plot(high_level, color=color.red, linewidth=2, title="Resistance Level")
+plot(low_level, color=color.green, linewidth=2, title="Support Level")
+
+// Plot buy/sell signals
+plotshape(breakout_up, location=location.belowbar, color=color.green, style=shape.labelup, title="Breakout Buy Signal")
+plotshape(breakout_down, location=location.abovebar, color=color.red, style=shape.labeldown, title="Breakout Sell Signal")
+
+plotshape(buy_rsi, location=location.belowbar, color=color.green, style=shape.labelup, title="RSI Buy Signal")
+plotshape(sell_rsi, location=location.abovebar, color=color.red, style=shape.labeldown, title="RSI Sell Signal")
+
+plotshape(buy_trend, location=location.belowbar, color=color.green, style=shape.labelup, title="Trend Buy Signal")
+plotshape(sell_trend, location=location.abovebar, color=color.red, style=shape.labeldown, title="Trend Sell Signal")
+
+plotshape(buy_risk, location=location.belowbar, color=color.green, style=shape.labelup, title="Risk Buy Signal")
+plotshape(sell_risk, location=location.abovebar, color=color.red, style=shape.labeldown, title="Risk Sell Signal")
+
+plotshape(buy_candlestick, location=location.belowbar, color=color.green, style=shape.labelup, title="Candlestick Buy Signal")
+plotshape(sell_candlestick, location=location.abovebar, color=color.red, style=shape.labeldown, title="Candlestick Sell Signal")
